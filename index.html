@@ -251,13 +251,13 @@
         
         .data-table th,
         .data-table td {
-            padding: 16px 10px;
+            padding: 12px 8px; /* Giảm từ 16px 10px xuống 12px 8px */
             text-align: center;
             border: 1px solid #e2e8f0;
             vertical-align: middle;
             word-wrap: break-word;
             line-height: 1.4;
-            height: 65px; /* Tăng chiều cao từ 50px lên 65px */
+            height: 60px; /* Giảm từ 65px xuống 60px */
         }
         
         .data-table th {
@@ -268,12 +268,12 @@
             font-size: 11px;
             letter-spacing: 0.3px;
             border-bottom: 2px solid #3182ce;
-            height: 70px; /* Tăng chiều cao header từ 55px lên 70px */
+            height: 65px; /* Giảm từ 70px xuống 65px */
         }
         
         .data-table tbody tr {
             transition: all 0.2s ease;
-            height: 65px; /* Chiều cao cố định cho mỗi dòng */
+            height: 60px; /* Giảm từ 65px xuống 60px */
         }
         
         .data-table tbody tr:nth-child(even) {
@@ -426,25 +426,9 @@
         }
         
         @media (max-width: 768px) {
-            .header-section {
-                padding: 16px;
-            }
-            
-            .main-title {
-                font-size: 22px;
-            }
-            
-            .filters-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .data-table {
-                font-size: 11px;
-            }
-            
             .data-table th,
             .data-table td {
-                padding: 12px 6px;
+                padding: 10px 6px; /* Giảm padding cho mobile */
                 height: 55px; /* Mobile: giảm xuống 55px */
             }
             
@@ -535,6 +519,32 @@
             background: #2c5aa0;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(49,130,206,0.4);
+        }
+
+        /* Text alignment - left align for most columns, center for specific ones */
+        .col-stt,
+        .col-so-dk,
+        .col-ngay,
+        .col-tieu-chuan,
+        .col-nuoc {
+            text-align: center !important;
+        }
+
+        .col-ten-thuoc,
+        .col-nguyen-lieu,
+        .col-co-so-dk,
+        .col-cssx-nl,
+        .col-dia-chi {
+            text-align: left !important;
+            padding-left: 12px !important;
+        }
+
+        /* Enable text wrapping for all columns */
+        .data-table td {
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            hyphens: auto;
         }
     </style>
 </head>
@@ -841,14 +851,14 @@
                 row.className = 'fade-in';
                 row.innerHTML = `
                     <td class="col-stt">${start + index + 1}</td>
-                    <td class="col-ten-thuoc" title="${item.tenThuoc || ''}">${smartTruncate(item.tenThuoc, 25)}</td>
+                    <td class="col-ten-thuoc" title="${item.tenThuoc || ''}">${item.tenThuoc || ''}</td>
                     <td class="col-so-dk">${formatSoDangKy(item.soDangKy || '')}</td>
                     <td class="col-ngay">${formatDate(item.ngayHetHanSoDangKy)}</td>
-                    <td class="col-nguyen-lieu" title="${item.tenNguyenLieu || ''}">${smartTruncate(item.tenNguyenLieu, 30)}</td>
+                    <td class="col-nguyen-lieu" title="${item.tenNguyenLieu || ''}">${item.tenNguyenLieu || ''}</td>
                     <td class="col-tieu-chuan" title="${item.tieuChuanChatLuongNguyenLieu || ''}">${smartTruncate(item.tieuChuanChatLuongNguyenLieu, 15)}</td>
-                    <td class="col-co-so-dk" title="${item.tenCoSoSanXuatThuoc || ''}">${smartTruncate(item.tenCoSoSanXuatThuoc, 30)}</td>
-                    <td class="col-cssx-nl" title="${item.tenCoSoSanXuatNguyenLieu || ''}">${smartTruncate(item.tenCoSoSanXuatNguyenLieu, 30)}</td>
-                    <td class="col-dia-chi" title="${item.diaChiCoSoSanXuatNguyenLieu || ''}">${smartTruncate(item.diaChiCoSoSanXuatNguyenLieu, 35)}</td>
+                    <td class="col-co-so-dk" title="${item.tenCoSoSanXuatThuoc || ''}">${item.tenCoSoSanXuatThuoc || ''}</td>
+                    <td class="col-cssx-nl" title="${item.tenCoSoSanXuatNguyenLieu || ''}">${item.tenCoSoSanXuatNguyenLieu || ''}</td>
+                    <td class="col-dia-chi" title="${item.diaChiCoSoSanXuatNguyenLieu || ''}">${item.diaChiCoSoSanXuatNguyenLieu || ''}</td>
                     <td class="col-nuoc">${item.nuocSanXuatNguyenLieu || ''}</td>
                 `;
                 tableBody.appendChild(row);
