@@ -256,7 +256,7 @@
             border: 1px solid #e2e8f0;
             vertical-align: middle;
             word-wrap: break-word;
-            line-height: 1.4;
+            line-height: 1.5;
             height: 60px; /* Giảm từ 65px xuống 60px */
         }
         
@@ -301,11 +301,15 @@
         .col-co-so-dk { width: 16%; min-width: 160px; } /* Tăng từ 15% lên 16% */
         .col-cssx-nl { width: 16%; min-width: 160px; } /* Tăng từ 15% lên 16% */
         .col-dia-chi { 
-            width: 20%; /* Tăng từ 18% lên 20% */
-            min-width: 200px; /* Tăng từ 180px lên 200px */
-            white-space: pre-line !important;
-            word-break: break-word;
-            line-height: 1.3;
+            width: 150px !important; 
+            min-width: 150px;
+            max-width: 150px;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            word-break: normal !important;
+            text-align: left !important;
+            padding-left: 12px !important;
         }
         .col-nuoc { width: 8%; min-width: 80px; }
         
@@ -800,6 +804,10 @@
 
                 const data = await response.json();
                 allData = data.result.items || [];
+                
+                console.log('Sample data item:', allData[0]); // Debug để xem cấu trúc dữ liệu
+                console.log('First 5 drug names:', allData.slice(0, 5).map(item => item.tenThuoc));
+
                 filteredData = [...allData];
                 
                 updateStats();
@@ -849,231 +857,237 @@
             pageData.forEach((item, index) => {
                 const row = document.createElement('tr');
                 row.className = 'fade-in';
+                
+                // Debug log cho từng item
+                if (index === 0) {
+                    console.log('Displaying item:', item);
+                }
+                
                 row.innerHTML = `
                     <td class="col-stt">${start + index + 1}</td>
-                    <td class="col-ten-thuoc" title="${item.tenThuoc || ''}">${item.tenThuoc || ''}</td>
+                    <td class="col-ten-thuoc" title="${item.tenThuoc || 'Không có tên thuốc'}">${item.tenThuoc || ''}</td>
                     <td class="col-so-dk">${formatSoDangKy(item.soDangKy || '')}</td>
                     <td class="col-ngay">${formatDate(item.ngayHetHanSoDangKy)}</td>
                     <td class="col-nguyen-lieu" title="${item.tenNguyenLieu || ''}">${item.tenNguyenLieu || ''}</td>
                     <td class="col-tieu-chuan" title="${item.tieuChuanChatLuongNguyenLieu || ''}">${smartTruncate(item.tieuChuanChatLuongNguyenLieu, 15)}</td>
                     <td class="col-co-so-dk" title="${item.tenCoSoSanXuatThuoc || ''}">${item.tenCoSoSanXuatThuoc || ''}</td>
                     <td class="col-cssx-nl" title="${item.tenCoSoSanXuatNguyenLieu || ''}">${item.tenCoSoSanXuatNguyenLieu || ''}</td>
-                    <td class="col-dia-chi" title="${item.diaChiCoSoSanXuatNguyenLieu || ''}">${item.diaChiCoSoSanXuatNguyenLieu || ''}</td>
+                    <td class="col-dia-chi" title="${item.diaChiCoSoSanXuatNguyenLieu || ''}">${smartTruncate(item.diaChiCoSoSanXuatNguyenLieu, 25)}</td>
                     <td class="col-nuoc">${item.nuocSanXuatNguyenLieu || ''}</td>
                 `;
-                tableBody.appendChild(row);
-            });
+        tableBody.appendChild(row);
+    });
 
-            updatePagination(page);
-            updatePageInfo();
-        }
+    updatePagination(page);
+    updatePageInfo();
+}
         
-        function updatePagination(page) {
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            const container = document.getElementById('paginationContainer');
-            container.innerHTML = '';
+function updatePagination(page) {
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const container = document.getElementById('paginationContainer');
+    container.innerHTML = '';
 
-            if (totalPages <= 1) return;
+    if (totalPages <= 1) return;
 
-            // Previous button
-            const prevBtn = createPageButton('Trước', page - 1, page === 1);
-            container.appendChild(prevBtn);
+    // Previous button
+    const prevBtn = createPageButton('Trước', page - 1, page === 1);
+    container.appendChild(prevBtn);
 
-            // Page numbers
-            const startPage = Math.max(1, page - 2);
-            const endPage = Math.min(totalPages, page + 2);
+    // Page numbers
+    const startPage = Math.max(1, page - 2);
+    const endPage = Math.min(totalPages, page + 2);
 
-            if (startPage > 1) {
-                container.appendChild(createPageButton('1', 1));
-                if (startPage > 2) {
-                    container.appendChild(createPageButton('...', null, true));
-                }
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                container.appendChild(createPageButton(i.toString(), i, false, i === page));
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    container.appendChild(createPageButton('...', null, true));
-                }
-                container.appendChild(createPageButton(totalPages.toString(), totalPages));
-            }
-
-            // Next button
-            const nextBtn = createPageButton('Sau', page + 1, page === totalPages);
-            container.appendChild(nextBtn);
+    if (startPage > 1) {
+        container.appendChild(createPageButton('1', 1));
+        if (startPage > 2) {
+            container.appendChild(createPageButton('...', null, true));
         }
-        
-        function createPageButton(text, pageNum, disabled = false, active = false) {
-            const btn = document.createElement('a');
-            btn.href = '#';
-            btn.className = `page-btn ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
-            btn.textContent = text;
-            
-            if (!disabled && pageNum !== null) {
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    changePage(pageNum);
-                };
-            }
-            
-            return btn;
-        }
-        
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            if (page < 1 || page > totalPages) return;
-            
-            currentPage = page;
-            displayData(page);
-            
-            // Tự động cuộn lên đầu trang khi chuyển trang
-            scrollToTop();
-        }
-        
-        // Filtering
-        function setupFilters() {
-            const filterIds = [
-                'filterTenThuoc', 'filterSoDangKy', 'filterNgayHetHan', 'filterTenNguyenLieu',
-                'filterTieuChuan', 'filterTenCoSoDK', 'filterTenCSSXNL', 'filterDiaChi', 'filterNuocSXNL'
-            ];
-            
-            filterIds.forEach(id => {
-                const input = document.getElementById(id);
-                input.addEventListener('input', debounce(filterData, 300));
-            });
-            
-            // Setup items per page selector
-            document.getElementById('itemsPerPageSelect').addEventListener('change', updateItemsPerPage);
-        }
-        
-        function filterData() {
-            const filters = {
-                tenThuoc: document.getElementById('filterTenThuoc').value.trim().toLowerCase(),
-                soDangKy: document.getElementById('filterSoDangKy').value.trim().toLowerCase(),
-                ngayHetHan: document.getElementById('filterNgayHetHan').value.trim().toLowerCase(),
-                tenNguyenLieu: document.getElementById('filterTenNguyenLieu').value.trim().toLowerCase(),
-                tieuChuan: document.getElementById('filterTieuChuan').value.trim().toLowerCase(),
-                tenCoSoDK: document.getElementById('filterTenCoSoDK').value.trim().toLowerCase(),
-                tenCSSXNL: document.getElementById('filterTenCSSXNL').value.trim().toLowerCase(),
-                diaChi: document.getElementById('filterDiaChi').value.trim().toLowerCase(),
-                nuocSXNL: document.getElementById('filterNuocSXNL').value.trim().toLowerCase()
-            };
+    }
 
-            filteredData = allData.filter(item => {
-                return (
-                    (!filters.tenThuoc || (item.tenThuoc || '').toLowerCase().includes(filters.tenThuoc)) &&
-                    (!filters.soDangKy || (item.soDangKy || '').toLowerCase().includes(filters.soDangKy)) &&
-                    (!filters.ngayHetHan || formatDate(item.ngayHetHanSoDangKy).toLowerCase().includes(filters.ngayHetHan)) &&
-                    (!filters.tenNguyenLieu || (item.tenNguyenLieu || '').toLowerCase().includes(filters.tenNguyenLieu)) &&
-                    (!filters.tieuChuan || (item.tieuChuanChatLuongNguyenLieu || '').toLowerCase().includes(filters.tieuChuan)) &&
-                    (!filters.tenCoSoDK || (item.tenCoSoSanXuatThuoc || '').toLowerCase().includes(filters.tenCoSoDK)) &&
-                    (!filters.tenCSSXNL || (item.tenCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.tenCSSXNL)) &&
-                    (!filters.diaChi || (item.diaChiCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.diaChi)) &&
-                    (!filters.nuocSXNL || (item.nuocSanXuatNguyenLieu || '').toLowerCase().includes(filters.nuocSXNL))
-                );
-            });
-            
-            updateStats();
-            currentPage = 1;
-            displayData(1);
+    for (let i = startPage; i <= endPage; i++) {
+        container.appendChild(createPageButton(i.toString(), i, false, i === page));
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            container.appendChild(createPageButton('...', null, true));
         }
+        container.appendChild(createPageButton(totalPages.toString(), totalPages));
+    }
+
+    // Next button
+    const nextBtn = createPageButton('Sau', page + 1, page === totalPages);
+    container.appendChild(nextBtn);
+}
         
-        // Excel export
-        function exportToExcel() {
-            try {
-                const headers = [
-                    'STT', 'Tên thuốc', 'Số đăng ký', 'Ngày hết hạn SĐK', 'Tên nguyên liệu',
-                    'Tiêu chuẩn', 'Tên cơ sở ĐK', 'Tên CSSX NL', 'Địa chỉ CSSX NL', 'Nước SXNL'
-                ];
+function createPageButton(text, pageNum, disabled = false, active = false) {
+    const btn = document.createElement('a');
+    btn.href = '#';
+    btn.className = `page-btn ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+    btn.textContent = text;
+            
+    if (!disabled && pageNum !== null) {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            changePage(pageNum);
+        };
+    }
+            
+    return btn;
+}
+        
+function changePage(page) {
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    if (page < 1 || page > totalPages) return;
+            
+    currentPage = page;
+    displayData(page);
+            
+    // Tự động cuộn lên đầu trang khi chuyển trang
+    scrollToTop();
+}
+        
+// Filtering
+function setupFilters() {
+    const filterIds = [
+        'filterTenThuoc', 'filterSoDangKy', 'filterNgayHetHan', 'filterTenNguyenLieu',
+        'filterTieuChuan', 'filterTenCoSoDK', 'filterTenCSSXNL', 'filterDiaChi', 'filterNuocSXNL'
+    ];
+            
+    filterIds.forEach(id => {
+        const input = document.getElementById(id);
+        input.addEventListener('input', debounce(filterData, 300));
+    });
+            
+    // Setup items per page selector
+    document.getElementById('itemsPerPageSelect').addEventListener('change', updateItemsPerPage);
+}
+        
+function filterData() {
+    const filters = {
+        tenThuoc: document.getElementById('filterTenThuoc').value.trim().toLowerCase(),
+        soDangKy: document.getElementById('filterSoDangKy').value.trim().toLowerCase(),
+        ngayHetHan: document.getElementById('filterNgayHetHan').value.trim().toLowerCase(),
+        tenNguyenLieu: document.getElementById('filterTenNguyenLieu').value.trim().toLowerCase(),
+        tieuChuan: document.getElementById('filterTieuChuan').value.trim().toLowerCase(),
+        tenCoSoDK: document.getElementById('filterTenCoSoDK').value.trim().toLowerCase(),
+        tenCSSXNL: document.getElementById('filterTenCSSXNL').value.trim().toLowerCase(),
+        diaChi: document.getElementById('filterDiaChi').value.trim().toLowerCase(),
+        nuocSXNL: document.getElementById('filterNuocSXNL').value.trim().toLowerCase()
+    };
+
+    filteredData = allData.filter(item => {
+        return (
+            (!filters.tenThuoc || (item.tenThuoc || '').toLowerCase().includes(filters.tenThuoc)) &&
+            (!filters.soDangKy || (item.soDangKy || '').toLowerCase().includes(filters.soDangKy)) &&
+            (!filters.ngayHetHan || formatDate(item.ngayHetHanSoDangKy).toLowerCase().includes(filters.ngayHetHan)) &&
+            (!filters.tenNguyenLieu || (item.tenNguyenLieu || '').toLowerCase().includes(filters.tenNguyenLieu)) &&
+            (!filters.tieuChuan || (item.tieuChuanChatLuongNguyenLieu || '').toLowerCase().includes(filters.tieuChuan)) &&
+            (!filters.tenCoSoDK || (item.tenCoSoSanXuatThuoc || '').toLowerCase().includes(filters.tenCoSoDK)) &&
+            (!filters.tenCSSXNL || (item.tenCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.tenCSSXNL)) &&
+            (!filters.diaChi || (item.diaChiCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.diaChi)) &&
+            (!filters.nuocSXNL || (item.nuocSanXuatNguyenLieu || '').toLowerCase().includes(filters.nuocSXNL))
+        );
+    });
+            
+    updateStats();
+    currentPage = 1;
+    displayData(1);
+}
+        
+// Excel export
+function exportToExcel() {
+    try {
+        const headers = [
+            'STT', 'Tên thuốc', 'Số đăng ký', 'Ngày hết hạn SĐK', 'Tên nguyên liệu',
+            'Tiêu chuẩn', 'Tên cơ sở ĐK', 'Tên CSSX NL', 'Địa chỉ CSSX NL', 'Nước SXNL'
+        ];
                 
-                const ws = XLSX.utils.aoa_to_sheet([headers]);
+        const ws = XLSX.utils.aoa_to_sheet([headers]);
                 
-                const data = filteredData.map((item, index) => [
-                    index + 1,
-                    item.tenThuoc || '',
-                    formatSoDangKy(item.soDangKy || ''),
-                    formatDate(item.ngayHetHanSoDangKy),
-                    item.tenNguyenLieu || '',
-                    item.tieuChuanChatLuongNguyenLieu || '',
-                    item.tenCoSoSanXuatThuoc || '',
-                    item.tenCoSoSanXuatNguyenLieu || '',
-                    item.diaChiCoSoSanXuatNguyenLieu || '',
-                    item.nuocSanXuatNguyenLieu || ''
-                ]);
+        const data = filteredData.map((item, index) => [
+            index + 1,
+            item.tenThuoc || '',
+            formatSoDangKy(item.soDangKy || ''),
+            formatDate(item.ngayHetHanSoDangKy),
+            item.tenNguyenLieu || '',
+            item.tieuChuanChatLuongNguyenLieu || '',
+            item.tenCoSoSanXuatThuoc || '',
+            item.tenCoSoSanXuatNguyenLieu || '',
+            item.diaChiCoSoSanXuatNguyenLieu || '',
+            item.nuocSanXuatNguyenLieu || ''
+        ]);
                 
-                XLSX.utils.sheet_add_aoa(ws, data, { origin: 'A2' });
+        XLSX.utils.sheet_add_aoa(ws, data, { origin: 'A2' });
                 
-                ws['!cols'] = [
-                    { wch: 8 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 35 },
-                    { wch: 20 }, { wch: 35 }, { wch: 35 }, { wch: 40 }, { wch: 15 }
-                ];
+        ws['!cols'] = [
+            { wch: 8 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 35 },
+            { wch: 20 }, { wch: 35 }, { wch: 35 }, { wch: 40 }, { wch: 15 }
+        ];
                 
-                const range = XLSX.utils.decode_range(ws['!ref']);
-                for (let R = range.s.r; R <= range.e.r; ++R) {
-                    for (let C = range.s.c; C <= range.e.c; ++C) {
-                        const address = XLSX.utils.encode_cell({ r: R, c: C });
-                        if (!ws[address]) continue;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_cell({ r: R, c: C });
+                if (!ws[address]) continue;
                         
-                        if (R === 0) {
-                            ws[address].s = {
-                                font: { bold: true, name: 'Times New Roman', sz: 12 },
-                                fill: { fgColor: { rgb: 'E6F3FF' } },
-                                alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
-                                border: {
-                                    top: { style: 'thin', color: { rgb: '000000' } },
-                                    bottom: { style: 'thin', color: { rgb: '000000' } },
-                                    left: { style: 'thin', color: { rgb: '000000' } },
-                                    right: { style: 'thin', color: { rgb: '000000' } }
-                                }
-                            };
-                        } else {
-                            ws[address].s = {
-                                font: { name: 'Times New Roman', sz: 12 },
-                                alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
-                                border: {
-                                    top: { style: 'thin', color: { rgb: '000000' } },
-                                    bottom: { style: 'thin', color: { rgb: '000000' } },
-                                    left: { style: 'thin', color: { rgb: '000000' } },
-                                    right: { style: 'thin', color: { rgb: '000000' } }
-                                }
-                            };
+                if (R === 0) {
+                    ws[address].s = {
+                        font: { bold: true, name: 'Times New Roman', sz: 12 },
+                        fill: { fgColor: { rgb: 'E6F3FF' } },
+                        alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+                        border: {
+                            top: { style: 'thin', color: { rgb: '000000' } },
+                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                            left: { style: 'thin', color: { rgb: '000000' } },
+                            right: { style: 'thin', color: { rgb: '000000' } }
                         }
-                    }
+                    };
+                } else {
+                    ws[address].s = {
+                        font: { name: 'Times New Roman', sz: 12 },
+                        alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+                        border: {
+                            top: { style: 'thin', color: { rgb: '000000' } },
+                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                            left: { style: 'thin', color: { rgb: '000000' } },
+                            right: { style: 'thin', color: { rgb: '000000' } }
+                        }
+                    };
                 }
-                
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Nguyên liệu làm thuốc');
-                
-                const fileName = `nguyen-lieu-lam-thuoc-${new Date().toISOString().split('T')[0]}.xlsx`;
-                XLSX.writeFile(wb, fileName);
-                
-            } catch (error) {
-                console.error('Lỗi khi xuất Excel:', error);
-                alert('Lỗi khi xuất Excel. Vui lòng thử lại.');
             }
         }
+                
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Nguyên liệu làm thuốc');
+                
+        const fileName = `nguyen-lieu-lam-thuoc-${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+                
+    } catch (error) {
+        console.error('Lỗi khi xuất Excel:', error);
+        alert('Lỗi khi xuất Excel. Vui lòng thử lại.');
+    }
+}
         
-        // Event listeners
-        window.addEventListener('load', fetchData);
-        window.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', debounce(() => {
-            displayData(currentPage);
-        }, 250));
+// Event listeners
+window.addEventListener('load', fetchData);
+window.addEventListener('scroll', handleScroll);
+window.addEventListener('resize', debounce(() => {
+    displayData(currentPage);
+}, 250));
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'e') {
-                e.preventDefault();
-                exportToExcel();
-            }
-            if (e.ctrlKey && e.key === 'f') {
-                e.preventDefault();
-                toggleFilters();
-            }
-        });
-    </script>
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        exportToExcel();
+    }
+    if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        toggleFilters();
+    }
+});
+</script>
 </body>
 </html>
