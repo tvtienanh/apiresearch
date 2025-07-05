@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cơ sở dữ liệu nguyên liệu làm thuốc</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        
+        .app-container {
+            min-height: 100vh;
+            width: 100%;
+        }
+        
+        /* Header Section */
+        .header-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-bottom: 2px solid #e2e8f0;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .main-title {
+            text-align: center;
+            color: #2b6cb0;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+        
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .left-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stats-display {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        
+        .stat-badge {
+            background: #e6f3ff;
+            color: #2b6cb0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            border: 1px solid #bee3f8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2d3748;
+            white-space: nowrap;
+        }
+        
+        .items-per-page-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            color: #2d3748;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .items-per-page-select:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2c5aa0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(49, 130, 206, 0.3);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #3182ce;
+            border: 1px solid #3182ce;
+        }
+        
+        .btn-outline:hover {
+            background: #ebf8ff;
+            border-color: #2c5aa0;
+        }
+        
+        .btn-outline.active {
+            background: #ebf8ff;
+            border-color: #2c5aa0;
+            color: #2c5aa0;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            max-height: 0;
+            opacity: 0;
+        }
+        
+        .filter-section.expanded {
+            max-height: 220px;
+            opacity: 1;
+            padding: 20px 24px;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .filter-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #2d3748;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .filter-input {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            background: #fafafa;
+            color: #2d3748;
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: #3182ce;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+        
+        .filter-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        /* Table Section */
+        .table-section {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 60vh;
+            margin-top: 1px;
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 16px 24px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: white;
+            table-layout: fixed;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 16px 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            vertical-align: middle;
+            word-wrap: break-word;
+            line-height: 1.4;
+            height: 65px; /* Tăng chiều cao từ 50px lên 65px */
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+            font-weight: 600;
+            color: #2d3748;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #3182ce;
+            height: 70px; /* Tăng chiều cao header từ 55px lên 70px */
+        }
+        
+        .data-table tbody tr {
+            transition: all 0.2s ease;
+            height: 65px; /* Chiều cao cố định cho mỗi dòng */
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #ebf8ff;
+            box-shadow: 0 2px 4px rgba(49,130,206,0.2);
+        }
+        
+        /* Responsive Column widths - Tăng kích thước một số cột */
+        .col-stt { width: 4%; min-width: 50px; }
+        .col-ten-thuoc { width: 14%; min-width: 140px; } /* Tăng từ 12% lên 14% */
+        .col-so-dk { 
+            width: 12%; 
+            min-width: 120px;
+            white-space: pre-line !important;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        .col-ngay { width: 8%; min-width: 80px; }
+        .col-nguyen-lieu { width: 16%; min-width: 160px; } /* Tăng từ 15% lên 16% */
+        .col-tieu-chuan { width: 8%; min-width: 80px; }
+        .col-co-so-dk { width: 16%; min-width: 160px; } /* Tăng từ 15% lên 16% */
+        .col-cssx-nl { width: 16%; min-width: 160px; } /* Tăng từ 15% lên 16% */
+        .col-dia-chi { 
+            width: 20%; /* Tăng từ 18% lên 20% */
+            min-width: 200px; /* Tăng từ 180px lên 200px */
+            white-space: pre-line !important;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        .col-nuoc { width: 8%; min-width: 80px; }
+        
+        /* Loại bỏ webkit scrollbar styling */
+        .table-wrapper {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e0 #f7fafc;
+        }
+        
+        /* Footer Section */
+        .footer-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-top: 2px solid #e2e8f0;
+            padding: 16px 24px;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e0;
+            background: white;
+            color: #2d3748;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-width: 44px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .page-btn:hover:not(.disabled) {
+            background: #ebf8ff;
+            border-color: #3182ce;
+            color: #2b6cb0;
+            transform: translateY(-1px);
+        }
+        
+        .page-btn.active {
+            background: #3182ce;
+            border-color: #3182ce;
+            color: white;
+            box-shadow: 0 2px 4px rgba(49,130,206,0.3);
+        }
+        
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 247, 250, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+        
+        .loading-content {
+            text-align: center;
+            padding: 32px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f1f5f9;
+            border-top: 3px solid #3182ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .left-controls,
+            .right-controls {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-section {
+                padding: 16px;
+            }
+            
+            .main-title {
+                font-size: 22px;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                font-size: 11px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 12px 6px;
+                height: 55px; /* Mobile: giảm xuống 55px */
+            }
+            
+            .data-table th {
+                height: 60px; /* Mobile: header 60px */
+            }
+            
+            .pagination-container {
+                gap: 4px;
+            }
+            
+            .page-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                min-width: 36px;
+            }
+        }
+        
+        /* Utility Classes */
+        .text-muted {
+            color: #6b7280 !important;
+            font-weight: 400;
+        }
+        
+        .font-weight-bold {
+            font-weight: 600 !important;
+        }
+        
+        .d-none {
+            display: none !important;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Text readability improvements */
+        .data-table td {
+            color: #2d3748;
+            font-weight: 400;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Tooltip for truncated text */
+        .data-table td[title]:hover {
+            position: relative;
+            cursor: help;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(49,130,206,0.3);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 200;
+            font-weight: 500;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            background: #2c5aa0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(49,130,206,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1 class="main-title">Cơ sở dữ liệu nguyên liệu làm thuốc</h1>
+            
+            <div class="control-panel">
+                <div class="left-controls">
+                    <div class="stats-display">
+                        <div class="stat-badge">
+                            Tổng số bản ghi: <span id="totalCount" class="font-weight-bold">0</span>
+                        </div>
+                        <div class="stat-badge d-none" id="filteredInfo">
+                            Đã lọc: <span id="filteredCount" class="font-weight-bold">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Số dòng mỗi trang:</label>
+                        <select class="items-per-page-select" id="itemsPerPageSelect">
+                            <option value="50">50</option>
+                            <option value="100" selected>100</option>
+                            <option value="200">200</option>
+                            <option value="300">300</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="right-controls">
+                    <button class="btn btn-outline" id="toggleFiltersBtn" onclick="toggleFilters()">
+                        <span id="filterBtnText">Hiển thị bộ lọc</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="exportToExcel()">
+                        Xuất Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section" id="filterSection">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Tên thuốc</label>
+                    <input type="text" class="filter-input" id="filterTenThuoc" placeholder="Tìm kiếm tên thuốc...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Số đăng ký</label>
+                    <input type="text" class="filter-input" id="filterSoDangKy" placeholder="Tìm kiếm số đăng ký...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Ngày hết hạn SĐK</label>
+                    <input type="text" class="filter-input" id="filterNgayHetHan" placeholder="Tìm kiếm ngày hết hạn...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tên nguyên liệu</label>
+                    <input type="text" class="filter-input" id="filterTenNguyenLieu" placeholder="Tìm kiếm nguyên liệu...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tiêu chuẩn</label>
+                    <input type="text" class="filter-input" id="filterTieuChuan" placeholder="Tìm kiếm tiêu chuẩn...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tên cơ sở ĐK</label>
+                    <input type="text" class="filter-input" id="filterTenCoSoDK" placeholder="Tìm kiếm cơ sở đăng ký...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tên CSSX NL</label>
+                    <input type="text" class="filter-input" id="filterTenCSSXNL" placeholder="Tìm kiếm cơ sở sản xuất...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Địa chỉ CSSX NL</label>
+                    <input type="text" class="filter-input" id="filterDiaChi" placeholder="Tìm kiếm địa chỉ...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Nước SXNL</label>
+                    <input type="text" class="filter-input" id="filterNuocSXNL" placeholder="Tìm kiếm quốc gia...">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title">Dữ liệu nguyên liệu</div>
+                <div class="text-muted" id="pageInfo">Trang 1 của 1</div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th class="col-ten-thuoc">Tên thuốc</th>
+                            <th class="col-so-dk">Số đăng ký</th>
+                            <th class="col-ngay">Ngày hết hạn SĐK</th>
+                            <th class="col-nguyen-lieu">Tên nguyên liệu</th>
+                            <th class="col-tieu-chuan">Tiêu chuẩn</th>
+                            <th class="col-co-so-dk">Tên cơ sở ĐK</th>
+                            <th class="col-cssx-nl">Tên CSSX NL</th>
+                            <th class="col-dia-chi">Địa chỉ CSSX NL</th>
+                            <th class="col-nuoc">Nước SXNL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <div class="pagination-container" id="paginationContainer"></div>
+        </div>
+    </div>
+    
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">↑</button>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Đang tải dữ liệu nguyên liệu làm thuốc...</div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let itemsPerPage = 100;
+        let filtersVisible = false;
+        
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Định dạng ngày theo dd/MM/yyyy
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${day}/${month}/${year}`;
+        }
+        
+        function formatSoDangKy(soDangKy) {
+            if (!soDangKy) return '';
+            return soDangKy.replace(/\\n/g, '\n').replace(/\n/g, '\n');
+        }
+        
+        // Cải thiện hàm truncate để hiển thị nhiều text hơn
+        function smartTruncate(text, maxLength = 30) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            
+            // Try to break at word boundaries
+            const truncated = text.substring(0, maxLength);
+            const lastSpace = truncated.lastIndexOf(' ');
+            
+            if (lastSpace > maxLength * 0.7) {
+                return truncated.substring(0, lastSpace) + '...';
+            }
+            
+            return truncated + '...';
+        }
+        
+        // Scroll functions
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        function handleScroll() {
+            const backToTopBtn = document.getElementById('backToTopBtn');
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        }
+        
+        // UI Control functions
+        function toggleFilters() {
+            const filterSection = document.getElementById('filterSection');
+            const toggleBtn = document.getElementById('toggleFiltersBtn');
+            const btnText = document.getElementById('filterBtnText');
+            
+            filtersVisible = !filtersVisible;
+            
+            if (filtersVisible) {
+                filterSection.classList.add('expanded');
+                btnText.textContent = 'Ẩn bộ lọc';
+                toggleBtn.classList.add('active');
+            } else {
+                filterSection.classList.remove('expanded');
+                btnText.textContent = 'Hiển thị bộ lọc';
+                toggleBtn.classList.remove('active');
+            }
+        }
+        
+        function updateItemsPerPage() {
+            const select = document.getElementById('itemsPerPageSelect');
+            itemsPerPage = parseInt(select.value);
+            currentPage = 1;
+            displayData(1);
+        }
+        
+        // Data fetching
+        async function fetchData() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('https://dichvucong.dav.gov.vn/api/services/app/nguyenLieuLamThuoc/GetAllServerPaging', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        isActive: true,
+                        ngayHetHanSoDangKyTu: null,
+                        ngayHetHanSoDangKyToi: null,
+                        ngayKyCongVanTu: null,
+                        ngayKyCongVanToi: null,
+                        skipCount: 0,
+                        maxResultCount: 100000,
+                        sorting: null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP! trạng thái: ${response.status}`);
+                }
+
+                const data = await response.json();
+                allData = data.result.items || [];
+                filteredData = [...allData];
+                
+                updateStats();
+                displayData(1);
+                setupFilters();
+                
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu:', error);
+                alert('Lỗi khi tải dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // UI functions
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+        
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allData.length.toLocaleString('vi-VN');
+            
+            const filteredInfo = document.getElementById('filteredInfo');
+            const filteredCount = document.getElementById('filteredCount');
+            
+            if (filteredData.length !== allData.length) {
+                filteredCount.textContent = filteredData.length.toLocaleString('vi-VN');
+                filteredInfo.classList.remove('d-none');
+            } else {
+                filteredInfo.classList.add('d-none');
+            }
+        }
+        
+        function updatePageInfo() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            document.getElementById('pageInfo').textContent = `Trang ${currentPage} của ${totalPages}`;
+        }
+        
+        function displayData(page) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filteredData.slice(start, end);
+
+            pageData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'fade-in';
+                row.innerHTML = `
+                    <td class="col-stt">${start + index + 1}</td>
+                    <td class="col-ten-thuoc" title="${item.tenThuoc || ''}">${smartTruncate(item.tenThuoc, 25)}</td>
+                    <td class="col-so-dk">${formatSoDangKy(item.soDangKy || '')}</td>
+                    <td class="col-ngay">${formatDate(item.ngayHetHanSoDangKy)}</td>
+                    <td class="col-nguyen-lieu" title="${item.tenNguyenLieu || ''}">${smartTruncate(item.tenNguyenLieu, 30)}</td>
+                    <td class="col-tieu-chuan" title="${item.tieuChuanChatLuongNguyenLieu || ''}">${smartTruncate(item.tieuChuanChatLuongNguyenLieu, 15)}</td>
+                    <td class="col-co-so-dk" title="${item.tenCoSoSanXuatThuoc || ''}">${smartTruncate(item.tenCoSoSanXuatThuoc, 30)}</td>
+                    <td class="col-cssx-nl" title="${item.tenCoSoSanXuatNguyenLieu || ''}">${smartTruncate(item.tenCoSoSanXuatNguyenLieu, 30)}</td>
+                    <td class="col-dia-chi" title="${item.diaChiCoSoSanXuatNguyenLieu || ''}">${smartTruncate(item.diaChiCoSoSanXuatNguyenLieu, 35)}</td>
+                    <td class="col-nuoc">${item.nuocSanXuatNguyenLieu || ''}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            updatePagination(page);
+            updatePageInfo();
+        }
+        
+        function updatePagination(page) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const container = document.getElementById('paginationContainer');
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            const prevBtn = createPageButton('Trước', page - 1, page === 1);
+            container.appendChild(prevBtn);
+
+            // Page numbers
+            const startPage = Math.max(1, page - 2);
+            const endPage = Math.min(totalPages, page + 2);
+
+            if (startPage > 1) {
+                container.appendChild(createPageButton('1', 1));
+                if (startPage > 2) {
+                    container.appendChild(createPageButton('...', null, true));
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                container.appendChild(createPageButton(i.toString(), i, false, i === page));
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    container.appendChild(createPageButton('...', null, true));
+                }
+                container.appendChild(createPageButton(totalPages.toString(), totalPages));
+            }
+
+            // Next button
+            const nextBtn = createPageButton('Sau', page + 1, page === totalPages);
+            container.appendChild(nextBtn);
+        }
+        
+        function createPageButton(text, pageNum, disabled = false, active = false) {
+            const btn = document.createElement('a');
+            btn.href = '#';
+            btn.className = `page-btn ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+            btn.textContent = text;
+            
+            if (!disabled && pageNum !== null) {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    changePage(pageNum);
+                };
+            }
+            
+            return btn;
+        }
+        
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            displayData(page);
+            
+            // Tự động cuộn lên đầu trang khi chuyển trang
+            scrollToTop();
+        }
+        
+        // Filtering
+        function setupFilters() {
+            const filterIds = [
+                'filterTenThuoc', 'filterSoDangKy', 'filterNgayHetHan', 'filterTenNguyenLieu',
+                'filterTieuChuan', 'filterTenCoSoDK', 'filterTenCSSXNL', 'filterDiaChi', 'filterNuocSXNL'
+            ];
+            
+            filterIds.forEach(id => {
+                const input = document.getElementById(id);
+                input.addEventListener('input', debounce(filterData, 300));
+            });
+            
+            // Setup items per page selector
+            document.getElementById('itemsPerPageSelect').addEventListener('change', updateItemsPerPage);
+        }
+        
+        function filterData() {
+            const filters = {
+                tenThuoc: document.getElementById('filterTenThuoc').value.trim().toLowerCase(),
+                soDangKy: document.getElementById('filterSoDangKy').value.trim().toLowerCase(),
+                ngayHetHan: document.getElementById('filterNgayHetHan').value.trim().toLowerCase(),
+                tenNguyenLieu: document.getElementById('filterTenNguyenLieu').value.trim().toLowerCase(),
+                tieuChuan: document.getElementById('filterTieuChuan').value.trim().toLowerCase(),
+                tenCoSoDK: document.getElementById('filterTenCoSoDK').value.trim().toLowerCase(),
+                tenCSSXNL: document.getElementById('filterTenCSSXNL').value.trim().toLowerCase(),
+                diaChi: document.getElementById('filterDiaChi').value.trim().toLowerCase(),
+                nuocSXNL: document.getElementById('filterNuocSXNL').value.trim().toLowerCase()
+            };
+
+            filteredData = allData.filter(item => {
+                return (
+                    (!filters.tenThuoc || (item.tenThuoc || '').toLowerCase().includes(filters.tenThuoc)) &&
+                    (!filters.soDangKy || (item.soDangKy || '').toLowerCase().includes(filters.soDangKy)) &&
+                    (!filters.ngayHetHan || formatDate(item.ngayHetHanSoDangKy).toLowerCase().includes(filters.ngayHetHan)) &&
+                    (!filters.tenNguyenLieu || (item.tenNguyenLieu || '').toLowerCase().includes(filters.tenNguyenLieu)) &&
+                    (!filters.tieuChuan || (item.tieuChuanChatLuongNguyenLieu || '').toLowerCase().includes(filters.tieuChuan)) &&
+                    (!filters.tenCoSoDK || (item.tenCoSoSanXuatThuoc || '').toLowerCase().includes(filters.tenCoSoDK)) &&
+                    (!filters.tenCSSXNL || (item.tenCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.tenCSSXNL)) &&
+                    (!filters.diaChi || (item.diaChiCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.diaChi)) &&
+                    (!filters.nuocSXNL || (item.nuocSanXuatNguyenLieu || '').toLowerCase().includes(filters.nuocSXNL))
+                );
+            });
+            
+            updateStats();
+            currentPage = 1;
+            displayData(1);
+        }
+        
+        // Excel export
+        function exportToExcel() {
+            try {
+                const headers = [
+                    'STT', 'Tên thuốc', 'Số đăng ký', 'Ngày hết hạn SĐK', 'Tên nguyên liệu',
+                    'Tiêu chuẩn', 'Tên cơ sở ĐK', 'Tên CSSX NL', 'Địa chỉ CSSX NL', 'Nước SXNL'
+                ];
+                
+                const ws = XLSX.utils.aoa_to_sheet([headers]);
+                
+                const data = filteredData.map((item, index) => [
+                    index + 1,
+                    item.tenThuoc || '',
+                    formatSoDangKy(item.soDangKy || ''),
+                    formatDate(item.ngayHetHanSoDangKy),
+                    item.tenNguyenLieu || '',
+                    item.tieuChuanChatLuongNguyenLieu || '',
+                    item.tenCoSoSanXuatThuoc || '',
+                    item.tenCoSoSanXuatNguyenLieu || '',
+                    item.diaChiCoSoSanXuatNguyenLieu || '',
+                    item.nuocSanXuatNguyenLieu || ''
+                ]);
+                
+                XLSX.utils.sheet_add_aoa(ws, data, { origin: 'A2' });
+                
+                ws['!cols'] = [
+                    { wch: 8 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 35 },
+                    { wch: 20 }, { wch: 35 }, { wch: 35 }, { wch: 40 }, { wch: 15 }
+                ];
+                
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const address = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws[address]) continue;
+                        
+                        if (R === 0) {
+                            ws[address].s = {
+                                font: { bold: true, name: 'Times New Roman', sz: 12 },
+                                fill: { fgColor: { rgb: 'E6F3FF' } },
+                                alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+                                border: {
+                                    top: { style: 'thin', color: { rgb: '000000' } },
+                                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                                    left: { style: 'thin', color: { rgb: '000000' } },
+                                    right: { style: 'thin', color: { rgb: '000000' } }
+                                }
+                            };
+                        } else {
+                            ws[address].s = {
+                                font: { name: 'Times New Roman', sz: 12 },
+                                alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+                                border: {
+                                    top: { style: 'thin', color: { rgb: '000000' } },
+                                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                                    left: { style: 'thin', color: { rgb: '000000' } },
+                                    right: { style: 'thin', color: { rgb: '000000' } }
+                                }
+                            };
+                        }
+                    }
+                }
+                
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Nguyên liệu làm thuốc');
+                
+                const fileName = `nguyen-lieu-lam-thuoc-${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+            } catch (error) {
+                console.error('Lỗi khi xuất Excel:', error);
+                alert('Lỗi khi xuất Excel. Vui lòng thử lại.');
+            }
+        }
+        
+        // Event listeners
+        window.addEventListener('load', fetchData);
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', debounce(() => {
+            displayData(currentPage);
+        }, 250));
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportToExcel();
+            }
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                toggleFilters();
+            }
+        });
+    </script>
+</body>
+</html>
