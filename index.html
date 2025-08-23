@@ -253,16 +253,16 @@
             /* Force column widths with highest specificity */
             .data-table th.col-stt,
             .data-table td.col-stt { 
-                width: 40px !important; 
-                min-width: 40px !important; 
-                max-width: 40px !important;
+                width: 55px !important; 
+                min-width: 55px !important; 
+                max-width: 55px !important;
                 box-sizing: border-box !important;
             }
             
             .data-table th.col-so-dk,
             .data-table td.col-so-dk { 
-                width: 12% !important; 
-                min-width: 100px !important;
+                width: 11% !important; 
+                min-width: 90px !important;
                 white-space: pre-line !important;
                 word-break: break-word !important;
                 line-height: 1.3 !important;
@@ -327,9 +327,9 @@
             
             .data-table th.col-dia-chi,
             .data-table td.col-dia-chi { 
-                width: 120px !important; 
-                min-width: 120px !important;
-                max-width: 120px !important;
+                width: 100px !important; 
+                min-width: 100px !important;
+                max-width: 100px !important;
                 white-space: nowrap !important;
                 overflow: hidden !important;
                 text-overflow: ellipsis !important;
@@ -341,8 +341,15 @@
             
             .data-table th.col-nuoc,
             .data-table td.col-nuoc { 
-                width: 8% !important; 
+                width: 10% !important; 
                 min-width: 100px !important; 
+                box-sizing: border-box !important;
+            }
+            
+            .data-table th.col-end-customer,
+            .data-table td.col-end-customer { 
+                width: 15% !important; 
+                min-width: 150px !important; 
                 box-sizing: border-box !important;
             }
             
@@ -386,13 +393,13 @@
             
             /* Áp dụng kích thước cột cho header cells */
             .data-table th:nth-child(1) { 
-                width: 4% !important; 
+                width: 6% !important; 
                 min-width: 40px !important; 
                 max-width: 40px !important;
             }
             .data-table th:nth-child(2) { 
-                width: 16% !important; 
-                min-width: 110px !important;
+                width: 14% !important; 
+                min-width: 100px !important;
                 white-space: pre-line !important;
                 word-break: break-word !important;
                 overflow-wrap: break-word !important;
@@ -403,7 +410,7 @@
                 min-width: 150px !important; 
             }
             .data-table th:nth-child(4) { 
-                width: 11% !important; 
+                width: 10% !important; 
                 min-width: 80px !important; 
             }
             .data-table th:nth-child(5) { 
@@ -411,7 +418,7 @@
                 min-width: 175px !important; 
             }
             .data-table th:nth-child(6) { 
-                width: 6% !important; 
+                width: 6.7% !important; 
                 min-width: 60px !important; 
             }
             .data-table th:nth-child(7) { 
@@ -427,13 +434,18 @@
                 min-width: 160px !important; 
             }
             .data-table th:nth-child(10) { 
-                width: 150px !important; 
-                min-width: 150px !important; 
-                max-width: 150px !important; 
+                width: 120px !important; 
+                min-width: 120px !important; 
+                max-width: 120px !important; 
             }
             .data-table th:nth-child(11) { 
-                width: 6% !important; 
+                width: 8% !important; 
                 min-width: 60px !important; 
+            }
+            
+            .data-table th:nth-child(12) { 
+                width: 15% !important; 
+                min-width: 150px !important; 
             }
             
             /* Loại bỏ webkit scrollbar styling */
@@ -666,6 +678,11 @@
                 padding-left: 12px !important;
             }
 
+            .col-end-customer {
+                text-align: left !important;
+                padding-left: 12px !important;
+            }
+
             /* Enable text wrapping for all columns */
             .data-table td {
                 white-space: normal !important;
@@ -708,7 +725,7 @@
 
             /* Chat icon animation */
             .chat-button::before {
-                content: '';
+                content: '💬';
                 font-size: 24px;
                 animation: bounce 2s infinite;
             }
@@ -758,6 +775,12 @@
                         <button class="btn btn-outline" id="toggleFiltersBtn" onclick="toggleFilters()">
                             <span id="filterBtnText">Hiển thị bộ lọc</span>
                         </button>
+                        <button class="btn btn-outline" onclick="refreshEndCustomerData()">
+                            Refresh End-Customer
+                        </button>
+                        <button class="btn btn-outline" onclick="debugData()">
+                            Debug Data
+                        </button>
                         <button class="btn btn-primary" onclick="exportToExcel()">
                             Xuất Excel
                         </button>
@@ -796,20 +819,24 @@
                         <input type="text" class="filter-input" id="filterTieuChuan" placeholder="Tìm kiếm tiêu chuẩn...">
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Tên cơ sở ĐK</label>
+                        <label class="filter-label">Công ty SX</label>
                         <input type="text" class="filter-input" id="filterTenCoSoDK" placeholder="Tìm kiếm cơ sở đăng ký...">
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Tên CSSX NL</label>
+                        <label class="filter-label">Công ty SXNL</label>
                         <input type="text" class="filter-input" id="filterTenCSSXNL" placeholder="Tìm kiếm cơ sở sản xuất...">
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Địa chỉ CSSX NL</label>
+                        <label class="filter-label">Địa chỉ SXNL</label>
                         <input type="text" class="filter-input" id="filterDiaChi" placeholder="Tìm kiếm địa chỉ...">
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Nước SXNL</label>
                         <input type="text" class="filter-input" id="filterNuocSXNL" placeholder="Tìm kiếm quốc gia...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Công ty ĐK</label>
+                        <input type="text" class="filter-input" id="filterEndCustomer" placeholder="Tìm kiếm End-Customer...">
                     </div>
                 </div>
             </div>
@@ -832,10 +859,11 @@
                                 <th>Tên nguyên liệu</th>
                                 <th>Phân loại</th>
                                 <th>Tiêu chuẩn</th>
-                                <th>Tên cơ sở ĐK</th>
-                                <th>Tên CSSX NL</th>
-                                <th class="address">Địa chỉ CSSX NL</th>
+                                <th>Công ty SX</th>
+                                <th>Công ty SXNL</th>
+                                <th class="address">Địa chỉ SXNL</th>
                                 <th>Nước SXNL</th>
+                                <th>Công ty ĐK</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
@@ -869,6 +897,9 @@
             let itemsPerPage = 100;
             let filtersVisible = false;
             let loadingQuoteInterval = null;
+            let api2Data = []; // Dữ liệu từ API thứ 2
+            let isApi2Loaded = false; // Trạng thái load API thứ 2
+            let api2Map = new Map(); // Map để tìm kiếm nhanh từ API thứ 2
             
             // Random quotes cho loading screen
             const loadingQuotes = [
@@ -883,10 +914,26 @@
                 "Bạn đã từng thử đếm xem cái này load bao lâu chưa? Có đứa khùng mới đếm.",
                 "Dzì Dzị Trùi? Load lâu dữ vị...",
                 "??? ... ??? ...",
-                "Meow ",
+                "Meow🐱",
 				"Tín hiệu vũ trụ: -.-. .... ..- -.-. / -- --- - / -. --. .- -.-- / ...- ..- .. / ...- . / -.-.--",
 				"Sống trong đời sống, cần có một Đơn xin nghỉ việc",
-				"Job Application",
+				"Job Application is coming",
+                "Nay có đơn hàng gì mới chưa người đẹp?",
+                "Có công bố nguồn mới à hay sao mà zô đây?",
+                "Không được chửi khách, không được chửi khách, không được chửi khách, cái gì quan trọng nói lại 3 lần",
+                "Ủa em?",
+                "Mất kết nối...",
+                "Tín hiệu vũ trụ: Bún bò!",
+                "Tín hiệu vũ trụ: Gặp khách hàng!",
+                "Tín hiệu vũ trụ: Đủ KPI tháng này!",
+                "Mỉm cười nơi chín suối",
+                "Nhớ check lại trên Cục Dược nha!",
+                "Tín hiệu vũ trụ: Đi Đà Lạt!",
+                "Tín hiệu vũ trụ: Ăn chay!",
+                "Tín hiệu vũ trụ: Làm đi!",
+                "Tín hiệu vũ trụ: Đi ăn đi! Chờ chi!",
+                "Tín hiệu vũ trụ: Dừng lại suy ngẫm một chút!",
+                "Tín hiệu vũ trụ: Chắc chưa?",
                 "Tín hiệu vũ trụ: Matcha Latteeeee!!!!!",
                 "Tôi là Bánh Khúc đây!",
                 "Ăn chè Khúc Bạch không?",
@@ -1047,6 +1094,9 @@
                     displayData(1);
                     setupFilters();
                     
+                    // Fetch API thứ 2 sau khi load xong API đầu tiên
+                    await fetchApi2Data();
+                    
                 } catch (error) {
                     console.error('Lỗi khi tải dữ liệu:', error);
                     alert('Lỗi khi tải dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.');
@@ -1055,6 +1105,171 @@
                 }
             }
 
+            // Function fetch API thứ 2
+            async function fetchApi2Data() {
+                try {
+                    console.log('Fetching API thứ 2...');
+                    showLoading(true);
+                    document.getElementById('loadingText').textContent = 'Đang tải dữ liệu Công ty đăng ký...';
+                    
+                    const response = await fetch('http://dichvucong.dav.gov.vn/api/services/app/soDangKy/GetAllPublicServerPaging', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Max-Age': '1000000'
+                        },
+                        body: JSON.stringify({
+                            "SoDangKyThuoc": {},
+                            "KichHoat": true,
+                            "skipCount": 0,
+                            "maxResultCount": 100000,
+                            "sorting": null
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Lỗi HTTP API thứ 2! trạng thái: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('API thứ 2 data received:', data);
+                    api2Data = data.result.items || [];
+                    isApi2Loaded = true;
+                    
+                    // Clear và rebuild Map để tìm kiếm nhanh
+                    api2Map.clear();
+                    api2Data.forEach(item => {
+                        const soDangKy = (item.soDangKy || '').toString().trim();
+                        const soDangKyCu = (item.soDangKyCu || '').toString().trim();
+                        if (soDangKy) {
+                            api2Map.set(soDangKy, item);
+                        }
+                        if (soDangKyCu) {
+                            api2Map.set(soDangKyCu, item);
+                        }
+                    });
+                    
+                    console.log('API thứ 2 loaded with', api2Data.length, 'records');
+                    
+                    // Debug: Kiểm tra một số mẫu dữ liệu API thứ 2
+                    debugApi2Data();
+                    
+                    // Merge dữ liệu và cập nhật hiển thị
+                    mergeDataAndUpdateDisplay();
+                    
+                } catch (error) {
+                    console.error('Lỗi khi tải API thứ 2:', error);
+                    // Không hiển thị alert để không làm gián đoạn người dùng
+                    isApi2Loaded = false;
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // Function debug dữ liệu API thứ 2
+            function debugApi2Data() {
+                console.log('=== DEBUG API THỨ 2 ===');
+                console.log('Tổng số records:', api2Data.length);
+                console.log('Map size:', api2Map.size);
+                
+                // Hiển thị 5 mẫu đầu tiên
+                for (let i = 0; i < Math.min(5, api2Data.length); i++) {
+                    const item = api2Data[i];
+                    console.log(`Mẫu ${i + 1}:`, {
+                        soDangKy: item.soDangKy,
+                        soDangKyCu: item.soDangKyCu,
+                        tenThuoc: item.tenThuoc,
+                        tenCongTyDangKy: item.congTyDangKy?.tenCongTyDangKy
+                    });
+                }
+                
+                // Tìm các soDangKy có trong dữ liệu chính (sử dụng Map)
+                const sampleSoDangKy = ['VD3-121-21', 'VD-28878-18', 'VD-31303-18', 'VD-16959-12'];
+                console.log('=== KIỂM TRA CÁC SỐ ĐĂNG KÝ MẪU (SỬ DỤNG MAP) ===');
+                sampleSoDangKy.forEach(soDangKy => {
+                    const found = api2Map.get(soDangKy);
+                    console.log(`Số đăng ký "${soDangKy}":`, found ? 'Tìm thấy' : 'Không tìm thấy', found ? {
+                        tenCongTyDangKy: found.congTyDangKy?.tenCongTyDangKy,
+                        tenThuoc: found.tenThuoc
+                    } : null);
+                });
+            }
+
+            // Function tìm thông tin công ty đăng ký từ API thứ 2 (TỐI ƯU)
+            function findCompanyInfo(currentSoDangKy, currentSoDangKyCu) {
+                if (!isApi2Loaded) {
+                    return 'Đang tải...';
+                }
+                
+                if (!api2Map.size) {
+                    return 'Không có dữ liệu';
+                }
+                
+                // Tìm kiếm nhanh bằng Map (O(1))
+                const match = api2Map.get(currentSoDangKy) || 
+                             (currentSoDangKyCu ? api2Map.get(currentSoDangKyCu) : null);
+                
+                if (match) {
+                    return match.congTyDangKy?.tenCongTyDangKy || 'N/A';
+                }
+                
+                return 'Không tìm thấy';
+            }
+
+            // Function merge dữ liệu và cập nhật hiển thị (TỐI ƯU)
+            function mergeDataAndUpdateDisplay() {
+                console.log('🔄 Merging data...');
+                const startTime = performance.now();
+                let matchCount = 0;
+                let totalCount = allData.length;
+                
+                // Thêm thông tin End-Customer vào dữ liệu hiện tại
+                allData.forEach((item, index) => {
+                    // Trích xuất soDangKy và soDangKyCu từ dữ liệu hiện tại
+                    let currentSoDangKy = (item.soDangKy || '').toString().trim();
+                    let currentSoDangKyCu = '';
+                    
+                    // Xử lý trường hợp có "(SĐK cũ: ...)" trong soDangKy
+                    if (currentSoDangKy.includes('(SĐK cũ:')) {
+                        const mainPart = currentSoDangKy.split('(SĐK cũ:')[0].trim();
+                        const oldPart = currentSoDangKy.split('(SĐK cũ:')[1].replace(')', '').trim();
+                        currentSoDangKy = mainPart;
+                        currentSoDangKyCu = oldPart;
+                    }
+                    
+                    // Tìm thông tin công ty đăng ký (O(1) lookup)
+                    const endCustomer = findCompanyInfo(currentSoDangKy, currentSoDangKyCu);
+                    item.endCustomer = endCustomer;
+                    
+                    // Đếm số lượng match
+                    if (endCustomer && endCustomer !== 'Đang tải...' && endCustomer !== 'Không có dữ liệu' && endCustomer !== 'Không tìm thấy') {
+                        matchCount++;
+                    }
+                    
+                    // Log chỉ 3 item đầu để debug
+                    if (index < 3) {
+                        console.log(`📋 Item ${index + 1}:`, {
+                            soDangKy: currentSoDangKy,
+                            soDangKyCu: currentSoDangKyCu,
+                            endCustomer: endCustomer
+                        });
+                    }
+                });
+                
+                // Cập nhật filteredData
+                filteredData = [...allData];
+                
+                // Cập nhật hiển thị
+                updateStats();
+                displayData(currentPage);
+                
+                const endTime = performance.now();
+                const processingTime = ((endTime - startTime) / 1000).toFixed(2);
+                
+                console.log(`✅ Data merged successfully in ${processingTime}s. Found ${matchCount}/${totalCount} matches (${((matchCount/totalCount)*100).toFixed(1)}%)`);
+            }
+            
             function populatePhanLoaiDropdown() {
 				const phanLoaiSet = new Set();
 				
@@ -1108,7 +1323,7 @@
                 loadingQuoteInterval = setInterval(() => {
                     const randomQuote = loadingQuotes[Math.floor(Math.random() * loadingQuotes.length)];
                     document.getElementById('loadingText').textContent = randomQuote;
-                }, 25000);
+                }, 30000);
             }
             
             function stopLoadingQuotes() {
@@ -1165,6 +1380,7 @@
                         <td class="col-cssx-nl" title="${item.tenCoSoSanXuatNguyenLieu || ''}">${item.tenCoSoSanXuatNguyenLieu || ''}</td>
                         <td class="col-dia-chi" title="${item.diaChiCoSoSanXuatNguyenLieu || ''}">${smartTruncate(item.diaChiCoSoSanXuatNguyenLieu, 25)}</td>
                         <td class="col-nuoc">${item.nuocSanXuatNguyenLieu || ''}</td>
+                        <td class="col-end-customer" title="${item.endCustomer || ''}">${item.endCustomer || ''}</td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -1242,7 +1458,7 @@
     function setupFilters() {
         const filterIds = [
             'filterTenThuoc', 'filterSoDangKy', 'filterNgayHetHan', 'filterTenNguyenLieu',
-            'filterPhanLoai', 'filterTieuChuan', 'filterTenCoSoDK', 'filterTenCSSXNL', 'filterDiaChi', 'filterNuocSXNL'
+            'filterPhanLoai', 'filterTieuChuan', 'filterTenCoSoDK', 'filterTenCSSXNL', 'filterDiaChi', 'filterNuocSXNL', 'filterEndCustomer'
         ];
                 
         filterIds.forEach(id => {
@@ -1266,7 +1482,8 @@
             tenCoSoDK: document.getElementById('filterTenCoSoDK').value.trim().toLowerCase(),
             tenCSSXNL: document.getElementById('filterTenCSSXNL').value.trim().toLowerCase(),
             diaChi: document.getElementById('filterDiaChi').value.trim().toLowerCase(),
-            nuocSXNL: document.getElementById('filterNuocSXNL').value.trim().toLowerCase()
+            nuocSXNL: document.getElementById('filterNuocSXNL').value.trim().toLowerCase(),
+            endCustomer: document.getElementById('filterEndCustomer').value.trim().toLowerCase()
         };
 
         filteredData = allData.filter(item => {
@@ -1280,7 +1497,8 @@
                 (!filters.tenCoSoDK || (item.tenCoSoSanXuatThuoc || '').toLowerCase().includes(filters.tenCoSoDK)) &&
                 (!filters.tenCSSXNL || (item.tenCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.tenCSSXNL)) &&
                 (!filters.diaChi || (item.diaChiCoSoSanXuatNguyenLieu || '').toLowerCase().includes(filters.diaChi)) &&
-                (!filters.nuocSXNL || (item.nuocSanXuatNguyenLieu || '').toLowerCase().includes(filters.nuocSXNL))
+                (!filters.nuocSXNL || (item.nuocSanXuatNguyenLieu || '').toLowerCase().includes(filters.nuocSXNL)) &&
+                (!filters.endCustomer || (item.endCustomer || '').toLowerCase().includes(filters.endCustomer))
             );
         });
                 
@@ -1294,7 +1512,7 @@
         try {
             const headers = [
                 'STT', 'Số đăng ký', 'Tên thuốc', 'Ngày hết hạn SĐK', 'Tên nguyên liệu',
-                'Phân loại', 'Tiêu chuẩn', 'Tên cơ sở ĐK', 'Tên CSSX NL', 'Địa chỉ CSSX NL', 'Nước SXNL'
+                'Phân loại', 'Tiêu chuẩn', 'Công ty SX', 'Công ty SXNL', 'Địa chỉ SXNL', 'Nước SXNL', 'Công ty ĐK'
             ];
                     
             const ws = XLSX.utils.aoa_to_sheet([headers]);
@@ -1310,14 +1528,15 @@
                 item.tenCoSoSanXuatThuoc || '',
                 item.tenCoSoSanXuatNguyenLieu || '',
                 item.diaChiCoSoSanXuatNguyenLieu || '',
-                item.nuocSanXuatNguyenLieu || ''
+                item.nuocSanXuatNguyenLieu || '',
+                item.endCustomer || ''
             ]);
                     
             XLSX.utils.sheet_add_aoa(ws, data, { origin: 'A2' });
                     
             ws['!cols'] = [
                 { wch: 8 }, { wch: 25 }, { wch: 35 }, { wch: 18 }, { wch: 35 },
-                { wch: 20 }, { wch: 35 }, { wch: 35 }, { wch: 40 }, { wch: 15 }
+                { wch: 20 }, { wch: 35 }, { wch: 35 }, { wch: 40 }, { wch: 15 }, { wch: 15 }
             ];
                     
             const range = XLSX.utils.decode_range(ws['!ref']);
@@ -1368,6 +1587,79 @@
     function openChatRoom() {
         window.open('#', '_blank');
     }
+
+    function refreshEndCustomerData() {
+        console.log('Refresh End-Customer data requested.');
+        showLoading(true);
+        document.getElementById('loadingText').textContent = 'Đang tải dữ liệu End-Customer...';
+        fetchApi2Data().then(() => {
+            showLoading(false);
+            console.log('End-Customer data refreshed.');
+            alert('Đã cập nhật dữ liệu End-Customer.');
+        }).catch(error => {
+            console.error('Lỗi khi cập nhật dữ liệu End-Customer:', error);
+            alert('Lỗi khi cập nhật dữ liệu End-Customer. Vui lòng thử lại.');
+            showLoading(false);
+        });
+    }
+
+    function debugData() {
+        console.log('=== DEBUG ALL DATA ===');
+        console.log('Tổng số records:', allData.length);
+        for (let i = 0; i < Math.min(10, allData.length); i++) {
+            const item = allData[i];
+            console.log(`Mẫu ${i + 1}:`, {
+                soDangKy: item.soDangKy,
+                soDangKyCu: item.soDangKyCu,
+                tenThuoc: item.tenThuoc,
+                tenNguyenLieu: item.tenNguyenLieu,
+                phanLoai: item.phanLoaiNguyenLieu || item.phanLoai,
+                tieuChuan: item.tieuChuanChatLuongNguyenLieu,
+                coSoDK: item.tenCoSoSanXuatThuoc,
+                cssxNL: item.tenCoSoSanXuatNguyenLieu,
+                diaChi: item.diaChiCoSoSanXuatNguyenLieu,
+                nuocSXNL: item.nuocSanXuatNguyenLieu,
+                endCustomer: item.endCustomer
+            });
+        }
+        
+        // Test so sánh trực tiếp
+        testComparison();
+    }
+    
+    function testComparison() {
+        console.log('=== TEST COMPARISON (SỬ DỤNG MAP) ===');
+        if (!isApi2Loaded || !api2Map.size) {
+            console.log('❌ API thứ 2 chưa load hoặc Map trống');
+            return;
+        }
+        
+        // Test với một số soDangKy cụ thể
+        const testCases = [
+            'VD3-121-21',
+            'VD-28878-18', 
+            'VD-31303-18',
+            'VD-16959-12'
+        ];
+        
+        testCases.forEach(soDangKy => {
+            console.log(`\n Testing: "${soDangKy}"`);
+            
+            // Tìm trong Map (O(1))
+            const match = api2Map.get(soDangKy);
+            
+            if (match) {
+                console.log(` Found match:`, {
+                    soDangKy: match.soDangKy,
+                    soDangKyCu: match.soDangKyCu,
+                    tenThuoc: match.tenThuoc,
+                    tenCongTyDangKy: match.congTyDangKy?.tenCongTyDangKy
+                });
+            } else {
+                console.log(` No match found`);
+            }
+        });
+    }
             
             // Event listeners
             console.log('Setting up event listeners...');
@@ -1394,4 +1686,3 @@
         </script>
     </body>
     </html>
-
